@@ -1,2 +1,162 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+#exersice 1
+#Подскажите, почему код не работает по версии.1 ( код не пошел по циклу while)
+#вариант кода v.1
+#file = open('homework_with_files.txt', 'r', encoding = 'utf-8')
+#cook_book = {}
+#n = 0
+#for line in file:
+#    line = line.strip('|')
+#    n += 1
+#    if n == 1:
+#        dish = line
+#        continue
+#    if line == '\n':
+#        cook_book[dish] = list_ingredients
+#        n = 0
+#        continue
+#    try:
+#        n = int(line)
+#        a = 0
+#        list_ingredients = []
+#        while a != n:
+#            line = file.readline().strip('|')
+#            dict_ingredients = {}
+#            dict_ingredients[ingredient_name] = line[0]
+#            dict_ingredients[quantity] = line[1]
+#            dict_ingredients[measure] = line[2]
+#            list_ingredients.append(dict_ingredients)
+#           a += 1
+#    except:
+#        print('Не удалось создать книгу')
+
+# Ex.1 v.2
+with open('homework_with_files.txt', 'r', encoding = 'utf-8') as file:
+   cook_book = {}
+   count = 0
+   for line in file:
+       line = line.strip()
+       count += 1
+       if count == 1 :
+           dish = line
+       if line == '':
+           count = 0
+           cook_book[dish] = list_ingredients
+           continue
+       if count == 2:
+           list_ingredients = []
+           continue
+       if count > 2:
+           line = line.split('|')
+           dict_ingredients = {}
+           dict_ingredients['ingredient_name'] = line[0]
+           dict_ingredients['quantity'] = float(line[1])
+           dict_ingredients['measure'] = line[2]
+           list_ingredients.append(dict_ingredients)             
+
+print(cook_book)
+print('-----------------')
+#Ex.2
+def get_shop_list_by_dishes(dishes, person_count):
+    for_cook = {}
+    for dish in dishes:
+        food = cook_book[dish]
+        for i in range(len(food)):
+            dict_ingredients = food[i]
+            ingredient = dict_ingredients['ingredient_name']
+            measur = dict_ingredients['measure']
+            amount = dict_ingredients['quantity'] * person_count
+            amoun_dict = {}
+            amoun_dict['measure'] = measur
+            amoun_dict['quantity'] = amount
+            if ingredient in for_cook.keys():
+                for_cook[ingredient]['quantity'] = for_cook[ingredient]['quantity'] + amount
+            else:
+                for_cook[ingredient] = amoun_dict
+    print(for_cook)
+
+get_shop_list_by_dishes(['Запеченный картофель', 'Омлет'], 2)
+print('-----------------')
+
+#Ex3.
+# решил потренировать в этой задачи элементы ООП. Прошу не пугаться.
+class New_file:
+    instances = []
+
+    def __init__(self, list_name_files):
+        self.list_name_files = list_name_files
+        self.list_path = []
+        self.sorted_list_files = []
+        self.name_new_file = ''
+        self.__class__.instances.append(self)
+
+    @classmethod
+    def get_elements_class(cls):
+        return cls.instances
+
+    def __str__(self):
+        if self.name_new_file == '':
+            return f'Для объединения файлов в один, введите список файлов'
+        else:
+            return f'Новый файл с именем {self.name_new_file} создан'
+
+    def get_path(self) -> list:
+        import os
+        for i in range(len(self.list_name_files)):  # получить адрес файлов
+            BASE_DIR = os.getcwd()
+            #LOG_DIR_NAME = 'venv'  -  лекции был кусок этого кода, для чего он? у меня на компьютере работает без него
+            LOG_FILE_NAME = self.list_name_files[i]
+            file_path = os.path.join(BASE_DIR, LOG_FILE_NAME)
+            self.list_path.append(file_path)
+        return(self.list_path)
+
+    def get_sorted_file(self) -> list:
+        dict_files = {}
+        dict_path = {}
+        n = len(self.list_path)
+        for i in range(n):
+            with open(self.list_path[i], 'r', encoding='cp65001') as file:
+                count = 0
+                for line in file:
+                    count += 1
+                dict_files[self.list_name_files[i]] = count
+                dict_path[count] = self.list_path[i]
+        dict_sorted_files = {} # сортировка для порядка добавления в новый файл
+        dict_sorted_path = {} # пути к файлу в порядке сортировки
+        for key, value in sorted(dict_files.items(), key=lambda x: x[1]):
+            dict_sorted_files[value] = key
+        for key, value in sorted(dict_path.items()):
+            dict_sorted_path[key] = value
+        self.sorted_list_files.append(dict_sorted_files)
+        self.sorted_list_files.append(dict_sorted_path)
+        return self.sorted_list_files
+
+    def get_name_new_file(self):
+        list_elements = self.get_elements_class()
+        number = len(list_elements)
+        number = str(number)
+        name_new_file = 'result_file' + number + '.txt'
+        self.name_new_file = name_new_file
+        return self.name_new_file
+
+    def creat_new_file(self) -> file:
+        dict_sorted_path = self.sorted_list_files[1]
+        dict_sorted_files = self.sorted_list_files[0]
+        new_file = open(self.name_new_file, 'x', encoding='utf-8')
+        for key in dict_sorted_path.keys():
+            name_file = dict_sorted_files[key] + '\n'
+            new_file.write(name_file)
+            summ_line = str(key)+'\n'
+            new_file.write(summ_line)
+            with open(dict_sorted_path[key], 'r', encoding='utf-8') as file:
+                for line in file:
+                    new_file.write(line)
+        new_file.close()
+        print(f'Новый файл с именем {self.name_new_file} создан')
+
+
+list_file = New_file(['1.txt', '2.txt', '3.txt'])
+list_file.get_path()
+list_file.get_sorted_file()
+list_file.get_name_new_file()
+list_file.creat_new_file()
+print(list_file)
